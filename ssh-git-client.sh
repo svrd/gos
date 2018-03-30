@@ -43,6 +43,7 @@ function display_help_message {
   echo "help"
   echo "list-repos"
   echo "create-repo repo-name"
+  echo "remove-repo repo-name"
 }
 
 function run_cmd {
@@ -58,20 +59,40 @@ function run_cmd {
 function create_repo {
 
   name=$1
-  
-  echo "Checking repositories"
-  repo=$($ssh_cmd "ls /git/ | grep ${name}.git")  
+
+  repo=$($ssh_cmd "ls /git/ | grep ${name}.git")
   if [ "$?" == "0" ]; then
-    echo "Repository already exists!"
+    echo "Repository already exist!"
     exit 1
   fi
-  
+
   cmd="$ssh_cmd \"mkdir -p /git/${name}.git && git init --bare /git/${name}.git\""
   run_cmd $cmd
   echo "-----------------"
   echo "git clone ${gitserver}:/git/${name}.git"
   echo "or"
   echo "git remote add origin ${gitserver}:/git/${name}.git"
+}
+
+function remove_repo {
+
+  name=$1
+
+  repo=$($ssh_cmd "ls /git/ | grep ${name}.git")
+  if [ "$?" != "0" ]; then
+    echo "Repository does not exist!"
+    exit 1
+  fi
+
+  echo -n "Are you sure you want to remove repository ${name}.git? [y/N] "
+  read yesorno
+  if [ "$yesorno" != "y" ]; then
+    echo "Aborting"
+    exit 0
+  fi
+
+  cmd="$ssh_cmd \"rm -rf /git/${name}.git\""
+  run_cmd $cmd
 }
 
 if [ -z "$1" ]; then
@@ -84,6 +105,10 @@ if [ $cmd == "help" ]; then
 
   display_help_message
 
+elif [ $cmd == "list-repos" ]; then
+
+  eval $ssh_cmd "ls /git | sed 's/\(.*\).git/\1 $gitserver:\/git\/\1.git/g' | column -tx"
+
 elif [ $cmd == "create-repo" ]; then
 
   if [ -z "$2" ]; then
@@ -94,5 +119,16 @@ elif [ $cmd == "create-repo" ]; then
   name=$2
 
   create_repo $name
+
+elif [ $cmd == "remove-repo" ]; then
+
+  if [ -z "$2" ]; then
+    echo "USAGE: $0 create-repo NAME"
+    exit 1
+  fi
+
+  name=$2
+
+  remove_repo $name
 
 fi
