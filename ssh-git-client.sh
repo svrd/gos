@@ -14,7 +14,9 @@ if [ ! -f $config_file ]; then
   read gitserver
   echo "gitserver=\"$gitserver\"" >> $config_file
   
-  cat ~
+  currentdir=$(pwd)
+  echo "alias gitclient=\"${currentdir}/$0\"" >> ~/.bashrc
+
 fi
 
 if [ "$gitserver" == "" ]; then
