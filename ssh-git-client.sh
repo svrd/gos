@@ -24,8 +24,6 @@ if [ "$gitserver" == "" ]; then
   exit 1
 fi
 
-echo "git server: $gitserver"
-
 # Check and generate id file
 if [ ! -f ${id_file}.pub ]; then  
 
@@ -37,6 +35,15 @@ if [ ! -f ${id_file}.pub ]; then
 fi
 
 ssh_cmd="ssh -i $id_file $gitserver"
+
+function display_help_message {
+
+  echo "usage: $0 command"
+  echo "commands:"
+  echo "help"
+  echo "list-repos"
+  echo "create-repo repo-name"
+}
 
 function run_cmd {
 
@@ -68,13 +75,16 @@ function create_repo {
 }
 
 if [ -z "$1" ]; then
-  echo "USAGE: $0 COMMAND"
+  display_help_message
   exit 1
 fi
 
 cmd=$1
+if [ $cmd == "help" ]; then
 
-if [ $cmd == "create-repo" ]; then
+  display_help_message
+
+elif [ $cmd == "create-repo" ]; then
 
   if [ -z "$2" ]; then
     echo "USAGE: $0 create-repo NAME"
