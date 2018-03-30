@@ -16,8 +16,11 @@ This creates
 and
 ~/.ssh/id_rsa
 
+if ~/.ssh/id_rsa was created it is also added to authorized keys on the server
+
 Usage:
-git-client create-repo a-test-repo
-git-client list-repos
-git-glient remove-repo a-test-repo
+gitclient add-key                  # Adds key to authorized keys on the git server
+gitclient create-repo a-test-repo
+gitclient list-repos
+gitglient remove-repo a-test-repo
 

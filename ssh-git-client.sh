@@ -24,13 +24,18 @@ if [ "$gitserver" == "" ]; then
   exit 1
 fi
 
+function add_authorized_key {
+  
+  cat ${id_file}.pub | ssh $gitserver "mkdir -p ~./ssh && cat >> ~/.ssh/authorized_keys"
+}
+
 # Check and generate id file
-if [ ! -f ${id_file}.pub ]; then  
+if [ ! -f ${id_file}.pub ]; then
 
   mkdir -p ~/.ssh
   ssh-keygen -t rsa -f $id_file
 
-  cat ${id_file}.pub | ssh $gitserver "mkdir -p ~./ssh && cat >> ~/.ssh/authorized_keys"
+  add_authorized_key
 fi
 
 ssh_cmd="ssh -i $id_file $gitserver"
@@ -43,6 +48,7 @@ function display_help_message {
   echo "list-repos"
   echo "create-repo repo-name"
   echo "remove-repo repo-name"
+  echo "add-key"
 }
 
 function run_cmd {
@@ -130,4 +136,7 @@ elif [ $cmd == "remove-repo" ]; then
 
   remove_repo $name
 
+elif [ $cmd == "add-key" ]; then
+
+  add_authorized_key
 fi
