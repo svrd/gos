@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 config_file=~/.ssh-git-client.config
-id_file=~/.ssh/id_rsa_git
+id_file=~/.ssh/id_rsa
 
 . $config_file
 
@@ -29,9 +29,8 @@ if [ ! -f ${id_file}.pub ]; then
 
   mkdir -p ~/.ssh
   ssh-keygen -t rsa -f $id_file
-  
+
   cat ${id_file}.pub | ssh $gitserver "mkdir -p ~./ssh && cat >> ~/.ssh/authorized_keys"
-    
 fi
 
 ssh_cmd="ssh -i $id_file $gitserver"
