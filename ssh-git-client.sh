@@ -1,22 +1,22 @@
 #!/usr/bin/env bash
 
-config_file=~/.ssh-git-client.config
+config_file=~/.gos.config
 id_file=~/.ssh/id_rsa
 
+if [ -f $config_file ]; then
 . $config_file
+fi
 
 if [ ! -f $config_file ]; then
   echo "Configuring ssh-git-client for the first time"
   
   # Create a config file
-  touch $config_file
-  echo -n "git server: "
+  echo -n "git server (git@hostname): "
   read gitserver
-  echo "gitserver=\"$gitserver\"" >> $config_file
+  echo "gitserver=\"$gitserver\"" > $config_file
   
   currentdir=$(pwd)
-  echo "alias gitclient=\"${currentdir}/$0\"" >> ~/.bashrc
-
+  echo "alias gos=\"${currentdir}/$0\"" >> ~/.bashrc
 fi
 
 if [ "$gitserver" == "" ]; then
@@ -45,9 +45,9 @@ function display_help_message {
   echo "usage: $0 command"
   echo "commands:"
   echo "help"
-  echo "list-repos"
-  echo "create-repo repo-name"
-  echo "remove-repo repo-name"
+  echo "list"
+  echo "create repo-name"
+  echo "remove repo-name"
   echo "add-key"
 }
 
@@ -110,11 +110,11 @@ if [ $cmd == "help" ]; then
 
   display_help_message
 
-elif [ $cmd == "list-repos" ]; then
+elif [ $cmd == "list" ]; then
 
   eval $ssh_cmd "ls /git | sed 's/\(.*\).git/\1 $gitserver:\/git\/\1.git/g' | column -tx"
 
-elif [ $cmd == "create-repo" ]; then
+elif [ $cmd == "create" ]; then
 
   if [ -z "$2" ]; then
     echo "USAGE: $0 create-repo NAME"
@@ -125,7 +125,7 @@ elif [ $cmd == "create-repo" ]; then
 
   create_repo $name
 
-elif [ $cmd == "remove-repo" ]; then
+elif [ $cmd == "remove" ]; then
 
   if [ -z "$2" ]; then
     echo "USAGE: $0 create-repo NAME"
@@ -139,4 +139,9 @@ elif [ $cmd == "remove-repo" ]; then
 elif [ $cmd == "add-key" ]; then
 
   add_authorized_key
+
+else
+
+  display_help_message
+  exit 1
 fi
