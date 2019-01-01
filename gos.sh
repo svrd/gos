@@ -89,11 +89,25 @@ function abort_if_not_exists {
   fi
 }
 
+function confirmOrAbort {
+
+  echo -n "Are you sure? [y/N] "
+  local yesorno=""
+  read yesorno
+  if [ "$yesorno" != "y" ]; then
+    echo "Aborting"
+    exit 1
+  fi
+}
+
 function create_repo {
 
   local name=$1
 
   abort_if_exists $name
+
+  echo "Creating repository ${name}.git"
+  confirmOrAbort
 
   local cmd="$ssh_cmd \"mkdir -p /git/${name}.git && git init --bare /git/${name}.git\""
   run_cmd "$cmd"
@@ -109,13 +123,8 @@ function remove_repo {
 
   abort_if_not_exists $name
 
-  echo -n "Are you sure you want to remove repository ${name}.git? [y/N] "
-  local yesorno=""
-  read yesorno
-  if [ "$yesorno" != "y" ]; then
-    echo "Aborting"
-    exit 0
-  fi
+  echo "Removing repository ${name}.git"
+  confirmOrAbort
 
   cmd="$ssh_cmd \"rm -rf /git/${name}.git\""
   run_cmd "$cmd"
@@ -129,12 +138,8 @@ function rename_repo {
   abort_if_not_exists $name
   abort_if_exists $new_name
 
-  echo -n "Are you sure you want to rename repository ${name}.git to ${new_name}.git? [y/N] "
-  read yesorno
-  if [ "$yesorno" != "y" ]; then
-    echo "Aborting"
-    exit 0
-  fi
+  echo "Renaming repository ${name}.git to ${new_name}.git"
+  confirmOrAbort
 
   local cmd="$ssh_cmd \"mv /git/${name}.git /git/${new_name}.git\""
   run_cmd "$cmd"
