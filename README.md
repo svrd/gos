@@ -6,25 +6,26 @@ sudo useradd git
 sudo passwd git
 sudo mkdir /home/git
 sudo chown git:git /home/git
-sudo ln -s your_repo_dir /git
-chown git:git your_repo_dir
+sudo ln -s <your_repo_dir> /git
+chown git:git <your_repo_dir>
 ```
 
 On the client:
 
 Configure gos (first time only):
 ```
-ssh-git-client/ssh-git-client.sh
+ssh-git-client/gos.sh
 ```
 
-This creates `~/.gos.config` and `~/.ssh/id_rsa`
+This creates `~/.gos.config` and `~/.ssh/id_rsa` and adds a `gos` alias to `~/.bashrc`
 
-if `~/.ssh/id_rsa` was created it is also added to authorized keys on the server
+If `~/.ssh/id_rsa` was created it is also added to authorized keys on the server
 
 Usage:
 ```
-gitclient add-key                  (Add key to authorized keys on the git server)
-gitclient list
-gitclient create REPO
-gitglient remove REPO
+gos add-key                  (Add public key to authorized keys on the git server)
+gos list
+gos create <name>
+gos remove <name>
+gos rename <current name> <new name>
 ```
