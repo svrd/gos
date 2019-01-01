@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e
+
 config_file=~/.gos.config
 id_file=~/.ssh/id_rsa
 
@@ -46,12 +48,15 @@ function display_help_message {
   echo "commands:"
   echo "help"
   echo "list"
-  echo "create repo-name"
-  echo "remove repo-name"
+  echo "create NAME"
+  echo "remove NAME"
+  echo "rename OLD-NAME NEW-NAME"
   echo "add-key"
 }
 
 function run_cmd {
+
+  local cmd=$1
 
   if [ "$TEST" == "" ]; then      
     echo $cmd
@@ -61,18 +66,36 @@ function run_cmd {
   fi
 }
 
-function create_repo {
+function abort_if_exists {
 
-  name=$1
+  local name=$1
 
-  repo=$($ssh_cmd "ls /git/ | grep ${name}.git")
-  if [ "$?" == "0" ]; then
-    echo "Repository already exist!"
+  local repo=$($ssh_cmd "ls /git/ | grep ${name}.git")
+  if [ "${repo}" != "" ]; then
+    echo "Repository ${name} already exists!"
     exit 1
   fi
+}
 
-  cmd="$ssh_cmd \"mkdir -p /git/${name}.git && git init --bare /git/${name}.git\""
-  run_cmd $cmd
+function abort_if_not_exists {
+
+  local name=$1
+
+  local repo=$($ssh_cmd "ls /git/ | grep ${name}.git")
+  if [ "$?" != "0" ]; then
+    echo "Repository ${name} does not exist!"
+    exit 1
+  fi
+}
+
+function create_repo {
+
+  local name=$1
+
+  abort_if_exists $name
+
+  local cmd="$ssh_cmd \"mkdir -p /git/${name}.git && git init --bare /git/${name}.git\""
+  run_cmd "$cmd"
   echo "-----------------"
   echo "git clone ${gitserver}:/git/${name}.git"
   echo "or"
@@ -81,15 +104,12 @@ function create_repo {
 
 function remove_repo {
 
-  name=$1
+  local name=$1
 
-  repo=$($ssh_cmd "ls /git/ | grep ${name}.git")
-  if [ "$?" != "0" ]; then
-    echo "Repository does not exist!"
-    exit 1
-  fi
+  abort_if_not_exists $name
 
   echo -n "Are you sure you want to remove repository ${name}.git? [y/N] "
+  local yesorno=""
   read yesorno
   if [ "$yesorno" != "y" ]; then
     echo "Aborting"
@@ -97,7 +117,26 @@ function remove_repo {
   fi
 
   cmd="$ssh_cmd \"rm -rf /git/${name}.git\""
-  run_cmd $cmd
+  run_cmd "$cmd"
+}
+
+function rename_repo {
+
+  local name=$1
+  local new_name=$2
+
+  abort_if_not_exists $name
+  abort_if_exists $new_name
+
+  echo -n "Are you sure you want to rename repository ${name}.git to ${new_name}.git? [y/N] "
+  read yesorno
+  if [ "$yesorno" != "y" ]; then
+    echo "Aborting"
+    exit 0
+  fi
+
+  local cmd="$ssh_cmd \"mv /git/${name}.git /git/${new_name}.git\""
+  run_cmd "$cmd"
 }
 
 if [ -z "$1" ]; then
@@ -135,6 +174,18 @@ elif [ $cmd == "remove" ]; then
   name=$2
 
   remove_repo $name
+
+elif [ $cmd == "rename" ]; then
+
+  if [ -z "$3" ]; then
+    echo "USAGE: $0 create-repo OLD-NAME NEW-NAME"
+    exit 1
+  fi
+
+  name=$2
+  new_name=$3
+
+  rename_repo $name $new_name
 
 elif [ $cmd == "add-key" ]; then
 
