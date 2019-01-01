@@ -3,45 +3,18 @@
 set -e
 
 config_file=~/.gos.config
-id_file=~/.ssh/id_rsa
-
 if [ -f $config_file ]; then
 . $config_file
 fi
 
-if [ ! -f $config_file ]; then
-  echo "Configuring ssh-git-client for the first time"
-  
-  # Create a config file
-  echo -n "git server (git@hostname): "
-  read gitserver
-  echo "gitserver=\"$gitserver\"" > $config_file
-  
-  currentdir=$(pwd)
-  script_name=$(basename $0)
-  echo "alias gos=\"${currentdir}/${script_name}\"" >> ~/.bashrc
-fi
+id_file=~/.ssh/id_rsa
 
-if [ "$gitserver" == "" ]; then
-  echo "gitserver not configured"
-  exit 1
-fi
+ssh_cmd="ssh -i $id_file $gitserver"
 
 function add_authorized_key {
   
   cat ${id_file}.pub | ssh $gitserver "mkdir -p ~./ssh && cat >> ~/.ssh/authorized_keys"
 }
-
-# Check and generate id file
-if [ ! -f ${id_file}.pub ]; then
-
-  mkdir -p ~/.ssh
-  ssh-keygen -t rsa -f $id_file
-
-  add_authorized_key
-fi
-
-ssh_cmd="ssh -i $id_file $gitserver"
 
 function display_help_message {
 
@@ -144,6 +117,33 @@ function rename_repo {
   local cmd="$ssh_cmd \"mv /git/${name}.git /git/${new_name}.git\""
   run_cmd "$cmd"
 }
+
+if [ ! -f $config_file ]; then
+  echo "Configuring ssh-git-client for the first time"
+  
+  # Create a config file
+  echo -n "git server (git@hostname): "
+  read gitserver
+  echo "gitserver=\"$gitserver\"" > $config_file
+  
+  currentdir=$(pwd)
+  script_name=$(basename $0)
+  echo "alias gos=\"${currentdir}/${script_name}\"" >> ~/.bashrc
+fi
+
+if [ "$gitserver" == "" ]; then
+  echo "gitserver not configured"
+  exit 1
+fi
+
+# Check and generate id file
+if [ ! -f ${id_file}.pub ]; then
+
+  mkdir -p ~/.ssh
+  ssh-keygen -t rsa -f $id_file
+
+  add_authorized_key
+fi
 
 if [ -z "$1" ]; then
   display_help_message
