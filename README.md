@@ -1,6 +1,6 @@
-# GOS (Git Over SSH), A bash client script for administration of a personal ssh based git server
+GOS (Git Over SSH), A bash client script for administration of a personal ssh based git server
 
-## On the server:
+On the server:
 ```
 sudo useradd git
 sudo passwd git
@@ -10,7 +10,7 @@ sudo ln -s your_repo_dir /git
 chown git:git your_repo_dir
 ```
 
-# On the client:
+On the client:
 
 Configure gos (first time only):
 ```
