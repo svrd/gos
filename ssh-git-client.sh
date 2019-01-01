@@ -18,7 +18,8 @@ if [ ! -f $config_file ]; then
   echo "gitserver=\"$gitserver\"" > $config_file
   
   currentdir=$(pwd)
-  echo "alias gos=\"${currentdir}/$0\"" >> ~/.bashrc
+  script_name=$(basename $0)
+  echo "alias gos=\"${currentdir}/${script_name}\"" >> ~/.bashrc
 fi
 
 if [ "$gitserver" == "" ]; then
@@ -48,9 +49,9 @@ function display_help_message {
   echo "commands:"
   echo "help"
   echo "list"
-  echo "create NAME"
-  echo "remove NAME"
-  echo "rename OLD-NAME NEW-NAME"
+  echo "create <name>"
+  echo "remove <name>"
+  echo "rename <current name> <new name>"
   echo "add-key"
 }
 
